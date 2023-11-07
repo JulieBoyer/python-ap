@@ -2,28 +2,28 @@ import pygame
 
 pygame.init()
 
-blanc = (255,255,255)
+BLANC = (255,255,255) #mettre les constantes en majuscule
 
-width = 400
+NOIR = (0,0,0)
 
-heigth = 300
+WIDTH = 400
 
-screen = pygame.display.set_mode( (width, heigth) )
+HEIGTH = 300
+
+screen = pygame.display.set_mode( (WIDTH, HEIGTH) )
 
 clock = pygame.time.Clock()
 
-clock_frequency = 1
+CLOCK_FREQUENCY = 1
 
 while True:
 
-    clock.tick(clock_frequency)
-
+    clock.tick(CLOCK_FREQUENCY)
+    screen.fill(BLANC)                  #remplit en blanc la fenêtre
     for event in pygame.event.get():
-        if event.type == pygame.KEYDOWN :
+        if event.type == pygame.KEYDOWN :   #permet de pouvoir fermer en appuyant sur la touche Q
             if event.key == pygame.K_q :
                 pygame.quit()
-
-    screen.fill(blanc)
 
     pygame.display.update()
 
