@@ -2,11 +2,13 @@ import pygame
 
 pygame.init()
 
-BLANC = (255,255,255) #mettre les constantes en majuscule
+#Initialize constants
 
-NOIR = (0,0,0)
+WHITE = (255,255,255) 
 
-VERT = (0,255,0)
+BLACK = (0,0,0)
+
+GREEN = (0,255,0)
 
 WIDTH = 400
 
@@ -18,11 +20,21 @@ clock = pygame.time.Clock()
 
 SIZE_OF_SQUARE = 20
 
-CLOCK_FREQUENCY = 1
+CLOCK_FREQUENCY = 7
+
+RIGHT = (1,0)
+
+LEFT = (-1,0)
+
+TOP = (0,-1)
+
+DOWN = (0,1)
 
 snake = [(10,5),(10,6),(10,7)]
 
-execute = True      #variable pour permettre fin d'execution
+execute = True      #variable to stop execution
+
+direction = TOP
 
 while execute :
 
@@ -31,10 +43,18 @@ while execute :
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN :   #permet de pouvoir fermer en 
             if event.key == pygame.K_q :        #appuyant sur la touche q
-                execute = False                    
+                execute = False 
+            if event.key == pygame.K_RIGHT : 
+                 direction = RIGHT
+            if event.key == pygame.K_LEFT : 
+                 direction = LEFT
+            if event.key == pygame.K_UP : 
+                 direction = TOP
+            if event.key == pygame.K_DOWN : 
+                 direction = DOWN         
         if event.type == pygame.QUIT :       #en fermant la fenetre
                 execute = False
-    screen.fill(BLANC)  #remplit en blanc la fenêtre    
+    screen.fill(WHITE)  #remplit en blanc la fenêtre    
     abscisse = 0
     ordonnée = 20
     impair = True
@@ -42,17 +62,19 @@ while execute :
         while ordonnée < 300 :
             rectangle = pygame.Rect(abscisse, ordonnée,SIZE_OF_SQUARE,SIZE_OF_SQUARE)
             ordonnée = ordonnée + 40
-            pygame.draw.rect(screen,NOIR,rectangle)
+            pygame.draw.rect(screen,BLACK,rectangle)
         abscisse = abscisse + 20
         if impair :
-             ordonnée = 0
-             impair = False
+            ordonnée = 0
+            impair = False
         else : 
-             ordonnée = 20
-             impair = True
+            ordonnée = 20
+            impair = True
+    snake.insert(0,(snake[0][0]+direction[0],snake[0][1]+direction[1]))
+    snake.pop()
     for (x,y) in snake :
-         rectangle_vert = pygame.Rect(x*20,y*20,SIZE_OF_SQUARE,SIZE_OF_SQUARE)
-         pygame.draw.rect(screen,VERT,rectangle_vert)
+        rectangle_vert = pygame.Rect(x*SIZE_OF_SQUARE,y*SIZE_OF_SQUARE,SIZE_OF_SQUARE,SIZE_OF_SQUARE)
+        pygame.draw.rect(screen,GREEN,rectangle_vert)
 
     pygame.display.update()
 
