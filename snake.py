@@ -6,6 +6,8 @@ BLANC = (255,255,255) #mettre les constantes en majuscule
 
 NOIR = (0,0,0)
 
+VERT = (0,255,0)
+
 WIDTH = 400
 
 HEIGTH = 300
@@ -18,6 +20,7 @@ SIZE_OF_SQUARE = 20
 
 CLOCK_FREQUENCY = 1
 
+snake = [(10,5),(10,6),(10,7)]
 
 execute = True      #variable pour permettre fin d'execution
 
@@ -47,6 +50,10 @@ while execute :
         else : 
              ordonnée = 20
              impair = True
+    for (x,y) in snake :
+         rectangle_vert = pygame.Rect(x*20,y*20,SIZE_OF_SQUARE,SIZE_OF_SQUARE)
+         pygame.draw.rect(screen,VERT,rectangle_vert)
+
     pygame.display.update()
 
 pygame.quit()
