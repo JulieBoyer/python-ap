@@ -14,7 +14,10 @@ screen = pygame.display.set_mode( (WIDTH, HEIGTH) )
 
 clock = pygame.time.Clock()
 
+SIZE_OF_SQUARE = 20
+
 CLOCK_FREQUENCY = 1
+
 
 execute = True      #variable pour permettre fin d'execution
 
@@ -28,8 +31,22 @@ while execute :
                 execute = False                    
         if event.type == pygame.QUIT :       #en fermant la fenetre
                 execute = False
-    screen.fill(BLANC)                  #remplit en blanc la fenêtre    
-
+    screen.fill(BLANC)  #remplit en blanc la fenêtre    
+    abscisse = 0
+    ordonnée = 20
+    impair = True
+    while abscisse < 400 :
+        while ordonnée < 300 :
+            rectangle = pygame.Rect(abscisse, ordonnée,SIZE_OF_SQUARE,SIZE_OF_SQUARE)
+            ordonnée = ordonnée + 40
+            pygame.draw.rect(screen,NOIR,rectangle)
+        abscisse = abscisse + 20
+        if impair :
+             ordonnée = 0
+             impair = False
+        else : 
+             ordonnée = 20
+             impair = True
     pygame.display.update()
 
 pygame.quit()
