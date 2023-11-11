@@ -23,6 +23,7 @@ snake = [(10,5),(10,6),(10,7)]
 #       head            queue
 direction = TOP
 fruit = (3,3)
+score = 0
 
 #Create a screen
 screen = pygame.display.set_mode( (WIDTH, HEIGTH) )
@@ -79,6 +80,8 @@ while execute :
             fruit = POS_FRUIT_2
         else :
             fruit = POS_FRUIT_1
+        #Update score
+        score = score + 1
     #Draw fruit 
     rectangle_red = pygame.Rect(fruit[0]*SIZE_OF_SQUARE,fruit[1]*SIZE_OF_SQUARE,SIZE_OF_SQUARE,SIZE_OF_SQUARE)
     pygame.draw.rect(screen,RED,rectangle_red)
@@ -88,6 +91,7 @@ while execute :
         pygame.draw.rect(screen,GREEN,rectangle_green)
     #Display the screen
     pygame.display.update()
+    pygame.display.set_caption(f"Score : {score}")
 #Turn off pygame
 pygame.quit()
 #Quit properly
