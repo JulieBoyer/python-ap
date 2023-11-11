@@ -6,19 +6,23 @@ pygame.init()
 WHITE = (255,255,255) 
 BLACK = (0,0,0)
 GREEN = (0,255,0)
+RED = (255,0,0)
 WIDTH = 400
 HEIGTH = 300
 SIZE_OF_SQUARE = 20
-CLOCK_FREQUENCY = 1
+CLOCK_FREQUENCY = 2
 RIGHT = (1,0)
 LEFT = (-1,0)
 TOP = (0,-1)
 DOWN = (0,1)
+POS_FRUIT_1 = (3,3)
+POS_FRUIT_2 = (15,10)
 
 #Initialize global variables
 snake = [(10,5),(10,6),(10,7)]
 #       head            queue
 direction = TOP
+fruit = (3,3)
 
 #Create a screen
 screen = pygame.display.set_mode( (WIDTH, HEIGTH) )
@@ -62,9 +66,22 @@ while execute :
                 rectangle=pygame.Rect(i*SIZE_OF_SQUARE,j*SIZE_OF_SQUARE,SIZE_OF_SQUARE,SIZE_OF_SQUARE)
                 pygame.draw.rect(screen,BLACK,rectangle)
     #New head
-    snake.insert(0,(snake[0][0]+direction[0],snake[0][1]+direction[1]))
-    #Delete queue
-    snake.pop()
+    new_head_pos = (snake[0][0]+direction[0],snake[0][1]+direction[1])
+    snake.insert(0,new_head_pos)
+    #Fruit has not been eaten
+    if new_head_pos != fruit :
+         #Delete queue
+        snake.pop()
+    #Fruit has been eaten
+    else :
+        #Switch fruit position
+        if fruit == POS_FRUIT_1 :
+            fruit = POS_FRUIT_2
+        else :
+            fruit = POS_FRUIT_1
+    #Draw fruit 
+    rectangle_red = pygame.Rect(fruit[0]*SIZE_OF_SQUARE,fruit[1]*SIZE_OF_SQUARE,SIZE_OF_SQUARE,SIZE_OF_SQUARE)
+    pygame.draw.rect(screen,RED,rectangle_red)
     #Draw snake
     for (x,y) in snake :
         rectangle_green= pygame.Rect(x*SIZE_OF_SQUARE,y*SIZE_OF_SQUARE,SIZE_OF_SQUARE,SIZE_OF_SQUARE)
