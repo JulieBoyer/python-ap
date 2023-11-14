@@ -13,7 +13,7 @@ RED = (255,0,0)
 WIDTH = 400
 HEIGTH = 300
 SIZE_OF_SQUARE = 20
-CLOCK_FREQUENCY = 2
+CLOCK_FREQUENCY = 4
 RIGHT = (1,0)
 LEFT = (-1,0)
 TOP = (0,-1)
@@ -34,6 +34,7 @@ parser.add_argument('--fruit-color', help = 'color of the fruit', default = RED)
 parser.add_argument('--snake-color', help="snake color", default = GREEN)
 parser.add_argument('--snake-length', type = int,help='initial length of the snake', default = 3)
 parser.add_argument('--tile-size', type = int, help='size of a square tile', default = SIZE_OF_SQUARE)
+parser.add_argument('--gameover-on-exit', help = 'A flag', action = 'store_true')
 args = parser.parse_args()
 
     #Raise errors if it's not the right value
@@ -100,13 +101,13 @@ while execute :
     n=args.width//args.tile_size
     m=args.height//args.tile_size  
         #Background
-    screen.fill(args.bg_color_2) 
+    screen.fill(args.bg_color_1) 
         #Black squares
     for i in range(n):
         for j in range(m):
             if (i+j)%2==0:
                 rectangle=pygame.Rect(i*args.tile_size,j*args.tile_size,args.tile_size,args.tile_size)
-                pygame.draw.rect(screen,args.bg_color_1,rectangle)
+                pygame.draw.rect(screen,args.bg_color_2,rectangle)
 
     #New head
     new_head_pos = (snake[0][0]+direction[0],snake[0][1]+direction[1])
@@ -132,13 +133,37 @@ while execute :
     pygame.draw.rect(screen,args.fruit_color,rectangle_red)
 
     #Draw snake
-    for (x,y) in snake :
+    for (x,y) in snake:
         rectangle_green= pygame.Rect(x*args.tile_size,y*args.tile_size,args.tile_size,args.tile_size)
         pygame.draw.rect(screen,args.snake_color,rectangle_green)
-
+        
+    #Handle snake exit
+    (x,y)=snake[0]
+    if x ==-1 : 
+        if args.gameover_on_exit :
+            execute = False
+        else :
+            snake[0]=(n-1,y)
+    if x == n:
+        if args.gameover_on_exit :
+            execute = False
+        else :
+            snake[0]=(0,y)
+    if y==-1 :
+        if args.gameover_on_exit :
+            execute = False
+        else :
+            snake[0]=(x,m-1)
+    if y ==m:
+        if args.gameover_on_exit :
+            execute = False
+        else :
+            snake[0]=(x,0)
     #Display the screen
     pygame.display.update()
     pygame.display.set_caption(f"Score : {score}")
+
+
 
 #Turn off pygame
 pygame.quit()
