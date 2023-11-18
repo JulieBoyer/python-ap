@@ -1,9 +1,12 @@
 #Import libraries
 import pygame
 import argparse
+import logging
+import operator
+import sys 
 
+#Initialize the Pygame libraty
 pygame.init()
-
 
 #Initialize constants
 WHITE = (255,255,255) 
@@ -13,18 +16,23 @@ RED = (255,0,0)
 WIDTH = 400
 HEIGTH = 300
 SIZE_OF_SQUARE = 20
-CLOCK_FREQUENCY = 4
+CLOCK_FREQUENCY = 5
 RIGHT = (1,0)
 LEFT = (-1,0)
 TOP = (0,-1)
 DOWN = (0,1)
 POS_FRUIT_1 = (3,3)
 POS_FRUIT_2 = (15,10)
+MIN_WND_SIZE = 200
+MIN_SNAKE_LEN = 2 
+MAX_SNAKE_LEN = 12
+MIN_TILE_SIZE = 10 
+MIN_NB_ROWS = 12
+MIN_NB_COLS = 20
 
 #Command line arguments 
-
     #Create arguments
-parser = argparse.ArgumentParser(description = 'Some description')
+parser = argparse.ArgumentParser(description = 'Implementation of the snake game')
 parser.add_argument('--bg-color-1', help ='first color of the background', default = WHITE)
 parser.add_argument('--bg-color-2',help='second color of the background', default = BLACK)
 parser.add_argument('--height', type = int, help='window height', default = HEIGTH)
@@ -35,23 +43,34 @@ parser.add_argument('--snake-color', help="snake color", default = GREEN)
 parser.add_argument('--snake-length', type = int,help='initial length of the snake', default = 3)
 parser.add_argument('--tile-size', type = int, help='size of a square tile', default = SIZE_OF_SQUARE)
 parser.add_argument('--gameover-on-exit', help = 'A flag', action = 'store_true')
+parser.add_argument('--debug','--g', help='Set debug mode.',action='store_true')
 args = parser.parse_args()
 
     #Raise errors if it's not the right value
+if args.height < MIN_WND_SIZE or args.width < MIN_WND_SIZE:
+    raise ValueError ("Window height and width must be greater or equal to %d.")
 if (args.height)%(args.tile_size)!= 0 :
     raise ValueError ("The height (-height argument) must be a multiple of (-tile_size)")
 if (args.width)%(args.tile_size)!= 0 :
     raise ValueError ("The width (-width argument ) must be a multiple of (-tile_size)")
-if (args.width)//(args.tile_size)< 20 :
+if (args.width)//(args.tile_size)< MIN_NB_COLS :
     raise ValueError ("There must be at least 20 columns")
-if (args.height)//(args.tile_size)< 12 :
+if (args.height)//(args.tile_size)< MIN_NB_ROWS :
     raise ValueError ("There must be at least 12 rows")
-if (args.snake_length)< 2 :
+if (args.snake_length)< MIN_SNAKE_LEN :
     raise ValueError ("The snake (-snake_length argument) should not be lower than 2")
-if (args.snake_length)> 13 :
+if (args.snake_length)> MAX_SNAKE_LEN :
     raise ValueError ("The snake (-snake_length argument) should not be lower than 2")
 if (args.bg_color_1)==(args.snake_color) or (args.bg_color_1)==(args.bg_color_2) or (args.bg_color_2)==(args.snake_color):
-    raise ValueError ("The color of the snake ans the colors of the checkboard should not be identical")
+    raise ValueError ("The color of the snake and the colors of the checkboard should not be identical")
+
+#Setup the logger
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler(sys.stderr)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+if args.debug:
+    logger.setLevel(logging.DEBUG)
 
 #Initialize global variables
     #Creation of snake
@@ -60,7 +79,7 @@ for i in range(args.snake_length):
     snake.append((10,5+i))
 
 direction = TOP
-fruit = (3,3)
+fruit = POS_FRUIT_1
 score = 0
 
 #Create a screen
@@ -70,7 +89,11 @@ screen = pygame.display.set_mode( (args.width, args.height ))
 clock = pygame.time.Clock()
 
 #Loop forever
-execute = True      
+execute = True 
+
+#Print an debug message
+logger.debug("Start main loop.")  
+
 while execute :
     clock.tick(args.fps)
 
@@ -120,6 +143,8 @@ while execute :
 
     #Fruit has been eaten
     else :
+        #Print an debug message 
+        logger.debug("Snake has eaten a fruit.")
         #Switch fruit position
         if fruit == POS_FRUIT_1 :
             fruit = POS_FRUIT_2
@@ -164,10 +189,10 @@ while execute :
     pygame.display.set_caption(f"Score : {score}")
 
 
-
+#Message when the game is over
+logger.info("GAME OVER !")
 #Turn off pygame
 pygame.quit()
 
 #Quit properly
 quit(0)  
-
