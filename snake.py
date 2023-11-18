@@ -163,27 +163,32 @@ while execute :
         pygame.draw.rect(screen,args.snake_color,rectangle_green)
         
     #Handle snake exit
-    (x,y)=snake[0]
-    if x ==-1 : 
+    if new_head_pos[0] ==-1 : 
         if args.gameover_on_exit :
             execute = False
         else :
             snake[0]=(n-1,y)
-    if x == n:
+    if new_head_pos[0] == n:
         if args.gameover_on_exit :
             execute = False
         else :
             snake[0]=(0,y)
-    if y==-1 :
+    if new_head_pos[1]==-1 :
         if args.gameover_on_exit :
             execute = False
         else :
             snake[0]=(x,m-1)
-    if y ==m:
+    if new_head_pos[1]==m:
         if args.gameover_on_exit :
             execute = False
         else :
             snake[0]=(x,0)
+
+    #Handle snake collison
+    for position, (a,b) in enumerate(snake):
+        if snake[0]==(a,b) and position != 0 :
+            execute = False 
+
     #Display the screen
     pygame.display.update()
     pygame.display.set_caption(f"Score : {score}")
