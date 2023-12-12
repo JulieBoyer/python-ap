@@ -4,6 +4,7 @@ import argparse
 import logging
 import operator
 import sys 
+import os
 
 #Initialize the Pygame libraty
 pygame.init()
@@ -47,6 +48,8 @@ def read_args():
     parser.add_argument('--tile-size', type = int, help='size of a square tile', default = SIZE_OF_SQUARE)
     parser.add_argument('--gameover-on-exit', help = 'A flag', action = 'store_true')
     parser.add_argument('--debug','--g', help='Set debug mode.',action='store_true')
+    parser.add_argument('--high-scores-file', default =os.path.join(os.environ['HOME'],'.snake_scores.txt'),help="The path to the file in which to store high score.")
+    parser.add_argument('--max-high-scores',type = int, default=5,help="The maximum of high score to store")
     args = parser.parse_args()
     #Raise errors if it's not the right value
     if args.height < MIN_WND_SIZE or args.width < MIN_WND_SIZE:
@@ -66,6 +69,46 @@ def read_args():
     if (args.bg_color_1)==(args.snake_color) or (args.bg_color_1)==(args.bg_color_2) or (args.bg_color_2)==(args.snake_color):
         raise ValueError ("The color of the snake and the colors of the checkboard should not be identical")
     return(args)
+
+def update_high_scores(scores,new_score,max_scores):
+    #Add new score
+    if new_score > 0 and (len(scores) < max_scores or new_score > scores[0][0]):
+        name = input("Write your name :")
+        scores.append((new_score,name))
+        shorten_high_scores(scores,max_scores)
+
+def print_high_scores(scores,logger):
+    if len(scores)>0:
+        logger.info("\nHIGH SCORES :")
+        for (b,a) in scores[::-1]:
+            print(a+': '+str(b))
+
+#Function to read scores and return the list scores
+def read_scores(path_of_file):
+    scores = []
+    if os.path.exists(path_of_file): 
+        with open(path_of_file,'r') as f:
+            for line in f :
+                line=line.strip()
+                line=line.split()
+                a,b=line
+                b=int(b)
+                scores.append((b,a))
+    scores.sort(key=lambda x : x[0])
+    return scores 
+
+#Function to update the file for high scores
+def write_scores(scores,name_path):
+    if scores != read_scores(name_path) : 
+        with open (name_path, 'w') as f :
+            for (b,a) in scores :
+                print(a+' '+str(b), file = f)
+
+
+def shorten_high_scores(scores,max_scores):
+    if len(scores)>max_scores:
+        scores.pop(0)
+
 
     #Function to process events
 def process_events(execute,event,direction):
@@ -243,6 +286,11 @@ def main():
     #Message when the game is over
     logger.info("GAME OVER !")
 
+    #High scores
+    scores = read_scores(args.high_scores_file)
+    update_high_scores(scores,get_score(snake,args),args.max_high_scores)
+    write_scores(scores,args.high_scores_file)
+    print_high_scores(scores,logger)
 #Call the function main
 main()
 
