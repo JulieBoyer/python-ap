@@ -47,7 +47,7 @@ def read_args():
     parser.add_argument('--snake-length', type = int,help='initial length of the snake', default = 3)
     parser.add_argument('--tile-size', type = int, help='size of a square tile', default = SIZE_OF_SQUARE)
     parser.add_argument('--gameover-on-exit', help = 'A flag', action = 'store_true')
-    parser.add_argument('--debug','--g', help='Set debug mode.',action='store_true')
+    parser.add_argument('--debug','-g', help='Set debug mode.',action='store_true')
     parser.add_argument('--high-scores-file', default =os.path.join(os.environ['HOME'],'.snake_scores.txt'),help="The path to the file in which to store high score.")
     parser.add_argument('--max-high-scores',type = int, default=5,help="The maximum of high score to store")
     args = parser.parse_args()
