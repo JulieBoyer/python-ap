@@ -120,8 +120,8 @@ for line in sys.stdin :
             raise Exception("Wrong line '%s' at '%d'"%(line,y))
     #print(f'Processing Message from sys.stdin ****{line}*****')
 #print(seq,varseq,i,y) 
-print(liste)
+#print(liste)
 args=read_args()
-print(Needleman_Wunsch_algo(liste[0],liste[1],args.match_score,args.mismatch_score,args.indel_score))
-
+#print(Needleman_Wunsch_algo(liste[0],liste[1],args.match_score,args.mismatch_score,args.indel_score))
+print(Needleman_Wunsch_algo('','',1,-1,-2))
 
