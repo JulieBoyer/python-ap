@@ -1,8 +1,13 @@
+import logging
+#Create a logger for this module
+logger = logging.getLogger(__name__)
+
+#To be used as a module or a script
+
 import sys
 import re
 import argparse
-
-    #Function for command line arguments 
+#Function for command line arguments 
 def read_args():
     #Create arguments
     parser = argparse.ArgumentParser(description = 'Implementation of the snake game')
@@ -10,7 +15,7 @@ def read_args():
     parser.add_argument('--match-score','-m',help='The score for a match of two bases', default = 1, type = int)
     parser.add_argument('--mismatch-score','-x',help='The score for a mismatch of two bases', default = -1, type = int)
     parser.add_argument('--indel-score','-i',help='The score for an insertion or a deletrion of two bases', default = -2 , type = int)
-    parser.add_argument('--log-file', help='Path to a log file', default = None)
+    parser.add_argument  ('--log-file', help='Path to a log file', default = None)
     parser.add_argument('--verbose', '-v', help = 'Verbose level', default = 0)
     return(parser.parse_args())
 
@@ -84,44 +89,44 @@ def read_list(seq,varseq,operation):
             varseq_new=varseq_new+varseq[id_seq]
             id_varseq=id_varseq+1
 
+if __name__== "__main__":
+    id_seq=''
+    id_var=''
+    seq=''
+    varseq=''
+    i=0
+    y=0
+    liste=[]
+    for line in sys.stdin :
+        y=y+1
+        line =line.rstrip()
+        if not line.startswith(';'):
+            if line.startswith('>'):
+                if id_seq=='':
+                    id_seq=line[1:]
+                elif id_var=='' :
+                    id_var=line[1:]
+                else :
+                    #print(seq,varseq,i,y) #change with a function
+                    if i==0: 
+                        liste.append(seq)
+                        liste.append(varseq)
+                    seq=''
+                    varseq=''
+                    id_seq=line[1:]
+                    id_var=''
+                    i=i+1
+            elif re.match('[GTCA]*$',line):
+                if id_var=='':
+                    seq=seq+line
+                else :
+                    varseq=varseq+line
+            else :
+                raise Exception("Wrong line '%s' at '%d'"%(line,y))
+        #print(f'Processing Message from sys.stdin ****{line}*****')
+    #print(seq,varseq,i,y) 
+    print(liste)
+    args=read_args()
+    print(Needleman_Wunsch_algo(liste[0],liste[1],args.match_score,args.mismatch_score,args.indel_score))
 
-id_seq=''
-id_var=''
-seq=''
-varseq=''
-i=0
-y=0
-liste=[]
-for line in sys.stdin :
-    y=y+1
-    line =line.rstrip()
-    if not line.startswith(';'):
-        if line.startswith('>'):
-            if id_seq=='':
-                id_seq=line[1:]
-            elif id_var=='' :
-                id_var=line[1:]
-            else :
-                #print(seq,varseq,i,y) #change with a function
-                if i==0: 
-                    liste.append(seq)
-                    liste.append(varseq)
-                seq=''
-                varseq=''
-                id_seq=line[1:]
-                id_var=''
-                i=i+1
-        elif re.match('[GTCA]*$',line):
-            if id_var=='':
-                seq=seq+line
-            else :
-                varseq=varseq+line
-        else :
-            raise Exception("Wrong line '%s' at '%d'"%(line,y))
-    #print(f'Processing Message from sys.stdin ****{line}*****')
-#print(seq,varseq,i,y) 
-#print(liste)
-args=read_args()
-#print(Needleman_Wunsch_algo(liste[0],liste[1],args.match_score,args.mismatch_score,args.indel_score))
-print(Needleman_Wunsch_algo('','',1,-1,-2))
 
