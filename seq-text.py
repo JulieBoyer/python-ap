@@ -1,4 +1,3 @@
-import logging
 #Create a logger for this module
 logger = logging.getLogger(__name__)
 
@@ -26,6 +25,7 @@ def Needleman_Wunsch_algo(seq,varseq, match_score, mismatch_score, index_score):
     m=len(varseq)+1
     matrix = [[0 for k in range (m)] for j in range(n)]
     chemin = [[(0,0) for k in range (m)] for j in range(n)]
+    operation = [[0 for k in range (m)] for j in range(n)]
 
     #Initialize matrix
     for j in range (m):
@@ -36,7 +36,7 @@ def Needleman_Wunsch_algo(seq,varseq, match_score, mismatch_score, index_score):
     #Fill the matrix
     for i in range (1,n):
         for j in range(1,m):
-            if seq[i-1]==varseq[j-1]: 
+            if seq[i-1]==seq[j-1]: 
                 val_diag = matrix[i-1][j-1]+match_score
             else :
                 val_diag = matrix[i-1][j-1]+mismatch_score
@@ -46,52 +46,47 @@ def Needleman_Wunsch_algo(seq,varseq, match_score, mismatch_score, index_score):
             if maxi == val_diag :
                 matrix[i][j]=val_diag
                 chemin[i][j]=(i-1,j-1)
+                operation[i][j]=1
             elif maxi == val_haut :
                 matrix[i][j]=val_haut
                 chemin[i][j]=(i-1,j)
+                operation[i][j]=2
             else :
                 matrix[i][j]=val_gauche
                 chemin[i][j]=(i,j-1)
-    return (matrix,chemin)
+                operation[i][j]=3
+    return (matrix,chemin,operation)
 
-def read_chemin(seq,varseq,chemin):
-    n=len(seq)+1
-    m=len(varseq)+1
-    indice =(n-1,m-1)
-    list_ind = []
-    while indice[0]!=0 or indice[1]!=0:
-        indice = chemin[indice[0]][indice[1]]
-        list_ind.append(indice)
-    list_ind.append(indice)
-    return (list_ind)
+def read_chemin(chemin,operation):
+    indice =(0,0)
+    list_op = []
+    while indice[0]>0 and indice[1]>0:
+        a,b=indice
+        i,j=chemin[a,b]
+        list_op.append(operation[a,b])
+        indice = (i,j)
+    return (operation)
 
-def read_list(seq,varseq,liste_ind):
-    liste_ind = liste_ind[::-1]
+def read_list(seq,varseq,operation):
+    operation = operation[::-1]
     seq_new=''
+    id_seq = 0
     varseq_new=''
-    if len(liste_ind)>1:
-        seq_new=seq_new+seq[liste_ind[0][0]]
-        varseq_new=varseq_new+varseq[liste_ind[0][1]]
-    for i in range(1,len(liste_ind)):
-        previous = liste_ind[i-1]
-        current = liste_ind[i]
-        if previous[0]==current[0]:
-            seq_new=seq_new+'_'
-        else :
-            seq_new=seq_new+seq[current[0]]
-        if previous[1]==current[1]:
+    id_varseq = 0
+    for x in liste :
+        if x==1:
+            seq_new=seq_new+seq[id_seq]
+            id_seq=id_seq+1
+            varseq_new=varseq_new+varseq[id_seq]
+            id_varseq=id_varseq+1
+        if x==2:
+            seq_new=seq_new+seq[id_seq]
+            id_seq=id_seq+1
             varseq_new=varseq_new+'_'
-        else :
-            varseq_new=varseq_new+varseq[current[1]]
-    return(seq_new,varseq_new)
-
-def present_result(seq,varseq,match_score, mismatch_score, index_score):
-    matrix,chemin = Needleman_Wunsch_algo(seq,varseq,match_score, mismatch_score, index_score)
-    list_ind=read_chemin(seq,varseq,chemin)
-    seq_new,varseq_new=read_list(seq,varseq,list_ind)
-    print("Highest score :",matrix[len(seq)][len(varseq)])
-    print(seq_new)
-    print(varseq_new)
+        else : 
+            seq_new=seq_new+'_'
+            varseq_new=varseq_new+varseq[id_seq]
+            id_varseq=id_varseq+1
 
 if __name__== "__main__":
     id_seq=''
@@ -111,7 +106,10 @@ if __name__== "__main__":
                 elif id_var=='' :
                     id_var=line[1:]
                 else :
-                    liste.append((seq,varseq))
+                    #print(seq,varseq,i,y) #change with a function
+                    if i==0: 
+                        liste.append(seq)
+                        liste.append(varseq)
                     seq=''
                     varseq=''
                     id_seq=line[1:]
@@ -124,12 +122,10 @@ if __name__== "__main__":
                     varseq=varseq+line
             else :
                 raise Exception("Wrong line '%s' at '%d'"%(line,y))
-         
+        #print(f'Processing Message from sys.stdin ****{line}*****')
+    #print(seq,varseq,i,y) 
+    print(liste)
     args=read_args()
-    #for i in range (12):
-        #print("seq",i+1)
-        #present_result(liste[i][0],liste[i][1],args.match_score,args.mismatch_score,args.indel_score)
-    
-    print(Needleman_Wunsch_algo('','',1,-1,-2))
-    print(read_chemin('','',Needleman_Wunsch_algo('','',1,-1,-2)[1]))
-    print(read_list('','',read_chemin('','',Needleman_Wunsch_algo('','',1,-1,-2)[1])))
+    print(Needleman_Wunsch_algo(liste[0],liste[1],args.match_score,args.mismatch_score,args.indel_score))
+
+
