@@ -1,20 +1,16 @@
 import argparse
-import datetime
 import logging
-import operator
 import os
 import pygame
-import random
-import re
 
 # Constants
 MIN_WND_SIZE = 200 # Minimum for window height or width.
 MIN_TILE_SIZE = 10 # Minimum for tile size.
 MIN_NB_ROWS = 12
 MIN_NB_COLS = 20
-FPS = 10
-WIDTH = 800
-HEIGHT = 600
+FPS = 5
+WIDTH = 50
+HEIGHT = 50
 BLACK = '#000000'
 WHITE = '#ffffff'
 STEPS = 20
@@ -25,305 +21,284 @@ DEAD = 0 # One of the the cell state
 LIVING = 1 # The other cell state
 
 def read_args():
-    """Read command line arguments."""
-
     # Define parser
     parser = argparse.ArgumentParser(
             description='An implementation of Game of Life.',
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-i', help='To set the path to the initial pattern file.',
-            default=INPUT_FILE)
-    parser.add_argument('-o', help='To set the path to the output file.',
-            default=OUPUT_FILE)
-    parser.add_argument('-m', help='To set the number of steps to run, when display is off.', type=int,
-            default=STEPS)
-    parser.add_argument('-d',
-            help=' When enabled, pygame is enabled and we display each step of the simulation.', action='store_true')
+    
+    # Define all the arguments
+    parser.add_argument('-i', help='To set the path to the initial pattern file.', default=INPUT_FILE)
+    parser.add_argument('-o', help='To set the path to the output file.', default=OUPUT_FILE)
+    parser.add_argument('-m', help='To set the number of steps to run, when display is off.', type=int, default=STEPS)
+    parser.add_argument('-d', help=' When enabled, pygame is enabled and we display each step of the simulation.', action='store_true')
     parser.add_argument('-f', help='The number of frames per second to use with pygame.', type=int, default=FPS)
-    parser.add_argument('--width', help='The initial width of the pygame screen.', type = int,
-            default=WIDTH)
+    parser.add_argument('--width', help='The initial width of the pygame screen.', type = int, default=WIDTH)
     parser.add_argument('--height', help='The initial height of the pygame screen.', type =int, default = HEIGHT)
     parser.add_argument('--tile-size', help='Tile size', type=int, default=TILE_SIZE)
+    parser.add_argument('-g', '--debug', help='Set debug mode.', action='store_true')
+    
     # Parse arguments
     args = parser.parse_args()
 
-    # Enable debug messages
+    # Enable debug
     if args.debug:
         logger.setLevel(logging.DEBUG)
-
+        logger.debug("Input file : " + args.i)
+        logger.debug("Output file : " + args.o)
+        logger.debug("Number of step (disp off) : " + str(args.m))
+        logger.debug("Display : " + str(args.d))
+        logger.debug("Frame rate : " + str(args.f))
+        logger.debug("Width : " + str(args.width))
+        logger.debug("Height : " + str(args.height))
+        logger.debug("Tiel size : " + str(args.tile_size))
     return args
 
-# Game over exception
-class GameOver(Exception):
-    pass
-
-class Board:
-
-    def __init__(self, width, height, tile_size):
-        self._width = width
-        self._height = height
-        self._tile_size = tile_size
-        self._objects = []
-        self._removed_objects = []
-
-        # Check arguments
-        if self._height < MIN_WND_SIZE or self._width < MIN_WND_SIZE:
-            raise ValueError(("Window height and width must be greater or " +
-                "equal to %d.") % MIN_WND_SIZE)
-        if self._tile_size < MIN_TILE_SIZE:
-            raise ValueError("Tile size must be greater or equal to %d."
-                    % MIN_TILE_SIZE)
-        if (self._height % self._tile_size != 0 or
-                self._width % self._tile_size != 0):
-            raise ValueError(("Window width (%d) and window height (%d) must" +
-                " be dividable by the tile size (%d).") % (self._width,
-                    self._height, self._tile_size))
-        if self._width // self._tile_size < MIN_NB_COLS:
-            raise ValueError(("Number of columns must be greater or equal to" + 
-                " %d, but width / tile_size = %d / %d = %d.") % (MIN_NB_COLS,
-                    self._width, self._tile_size,
-                    self._width // self._tile_size))
-        if self._height // self._tile_size < MIN_NB_ROWS:
-            raise ValueError(("Number of rows must be greater or equal to" + 
-                " %d, but height / tile_size = %d / %d = %d.") % (MIN_NB_ROWS,
-                    self._height, self._tile_size,
-                    self._height // self._tile_size))
-
-    def getWidth(self):
-        return self._width
-
-    def getHeight(self):
-        return self._height
-
-    def getNbCols(self):
-        return self._width // self._tile_size
-
-    def getNbRows(self):
-        return self._height // self._tile_size
-    
-    def drawTiles(self, screen, tiles):
-        
-        # Loop on all tiles
-        for tile in tiles:
-
-            # Is tile inside board?
-            if (tile.getCol() >= 0 and tile.getCol() < self.getNbCols()
-                    and tile.getRow() >= 0
-                    and tile.getRow() < self.getNbRows()):
-
-                # Compute rectangle
-                tile_rect = pygame.Rect(tile.getCol() * self._tile_size,
-                        tile.getRow() * self._tile_size,
-                        self._tile_size, self._tile_size)
-                
-                # Draw tile
-                pygame.draw.rect(screen, tile.getColor(), tile_rect)
-class Tile:
-    
-    def __init__(self, col, row, color=None):
+class Cell:
+    # Class definition for a cell
+    def __init__(self, row, col, alive=False):
         self._row = row
         self._col = col
-        self._color = None if color is None else pygame.Color(color)
-
-    def getCol(self):
-        return self._col
-
+        self._alive = alive
+    
+    # Functions to have access to internal data without being able to change it 
     def getRow(self):
         return self._row
-
-    def setCol(self, col):
-        self._col = col
-
-    def setRow(self, row):
-        self._row = row
-
-    def getColor(self):
-        return self._color
     
-class Factory:
-
-    def __init__(self,board):
-        self._board = board
-
-    def declareCell(self,)
-
-    def createSetOfCells(self,): #TODO create the cell from the input file
-        pass
-
-class GameObject:
-
-    def __init__(self, board, tiles=None):
-        self._board = board
-        self._tiles = None if tiles is None else tiles.copy()
-
-    def getTiles(self):
-        return self._tiles.copy()
-
-    def draw(self, screen):
-        if self._tiles is not None:
-            self._board.drawTiles(screen, self._tiles)  
-
-class BackgroundObject(GameObject):
-    pass
-
-class CheckerBackground(BackgroundObject):
-
-    def __init__(self, board, color_background=WHITE):
+    def getCol(self):
+        return self._col
     
-        # Create tiles
-        tiles = []
-        # Loop on all rows and columns
-        for i in range(board.getNbCols()):
-            for j in range(board.getNbRows()):
-                
-                # New tile
-                tiles.append(Tile(col=i, row=j, color=color_background))
+    def isAlive(self):
+        return self._alive
 
-        # Call super class
-        super().__init__(board, tiles)
-    
-class Cell :
+class SetOfCells:
+    # Class definition for a set of cells
+    def __init__(self, width, height, inputFile, outputFile):
 
-    def __init__(self,board, state,tile):
-        super().__init__(board, [tile]) #useful ?
-        self._state = state
-        """self._x = place [0]
-        self._y = place [1]"""
+        # Size of the simulation
+        self._width = width
+        self._height = height
 
-    def getState(self):
-        return(self._state)
-    
-    def getPlace(self):
-        return(self._x,self._y)
-    
-class Set_of_Cells :
-    
-    def __init__(self,listCells,file) :
-        self._listCells = listCells
-        self._file = file
-    
-    def load(self):
+        # Sets of cells
+        self._cells = [[None for i in range(self._width)]for j in range(self._height)]
+        self._former_cells = self._cells
+
+        # Files path
+        self._inputFile = inputFile
+        self._outputFile = outputFile
         
+    def get_set(self):
+        return self._cells
+   
+    def add_cell(self,cell,x,y):
+        self._cells[x][y] = cell
+    
+    def clear_cells(self):
+        self._cells = [[None for i in range(self._width)]for j in range(self._height)]
+    
+    def is_anyone_alive(self):
+        return any(any(cell.isAlive() for cell in cell_line) for cell_line in self._cells)
+    
+    def get_cell_values(self):
+        return [[cell.isAlive() for cell in cell_line] for cell_line in self._cells]
+
+    def load_cells(self):
+        # Clear previous cells
+        self.clear_cells()
+
         # Test if file exists
-        if os.path.exists(self._file):
-
+        if os.path.exists(self._inputFile):
             # Open file for reading
-            with open(self._file, 'r') as f:
-                i = 0 #number of line
-                # Loop on all lines
-                for line in f:
-                    line = line.rstrip() # Get rid of new line character
-                    for row, state in enumerate(line):
-                        if state == '1':
-                            self._listCells.append(Cell 1 (line,row)) # Add to list
-                        if state == '0':
-                            self._listCells.append(Cell 0 (line,row)) # Add to list
-                i = i + 1
+            with open(self._inputFile, 'r') as file:
+                for row, line in enumerate(file):
+                    for col, char in enumerate(line.strip()):
+                        if char == '1':
+                            self.add_cell(Cell(row, col, alive=True),row,col)
+                        if char == '0':
+                            self.add_cell(Cell(row, col, alive=False),row,col)
 
-    def save(self):
-        
+        # Complete the set if the text file is not full
+        for i in range(self._height):
+            for j in range(self._width):
+                if self._cells[i][j] == None:
+                    self.add_cell(Cell(i, j, alive=False),i,j)
+
+    def save_cells(self):
         # Open file for writing
-        with open(self._file, 'w') as f:
-
-            # Loop on all scores
-            for cell in self._listCells:
-                print(getState(cell), file=f)
-    #TODO : functions to save and load state ?
-        
-class Game :
-
-    def __init__(self,width=WIDTH,height=HEIGHT,fps=FPS):
-        self._fps = fps
-        # Initialize the Pygame library.
-        # This is a special step needed by Pygame. Most (99%) libraries do not
-        # need an initialization step.
-        logger.debug("Initialize Pygame.")
-        pygame.init()
-        
-        # Create a screen for display, choosing its size (width x height).
-        logger.debug("Create Pygame screen.")
-        self._screen = pygame.display.set_mode((width, height))
-
-        # Create a clock object that we will use to control the speed of our
-        # game.
-        logger.debug("Create Pygame clock.")
-        self._clock = pygame.time.Clock()
-
-        # Create the board
-        logger.debug("Create Board instance.")
-        self._board = Board(width=width, height=height, tile_size=tile_size) #TODO create Board 
-        
-        # Create the checkerboard background
-        logger.debug("Create background instance.")
-        self._board.addObject(CheckerBackground(self._board, color_1=bg_color_1,
-                color_2=bg_color_2))
-        
-    def _process_events(self):
-        """Process new events (keyboard, mouse)."""
-
-        for event in pygame.event.get():
-            
-            # Catch selection of exit icon (Window "cross" icon)
-            if event.type == pygame.QUIT:
-                raise GameOver()
-
-            # Catch a key press
-            elif event.type == pygame.KEYDOWN:
-                
-                # "Q" key has been pressed
-                if event.key == pygame.K_q:
-                    raise GameOver()
+        with open(self._outputFile, 'w') as file:
+            for cell_line in self._cells:
+                line = ""
+                for cell in cell_line:
+                    line += str(1 if cell.isAlive() else 0)
+                print(line,file=file)
     
-    def _update_display(self):
-        
-        # Draw all objects
-        self._board.drawObjects(self._screen)
+    def update_cells(self):
+        # Save the former state
+        self._former_cells = self._cells
+        self.clear_cells()
 
-        # Display the display
-        pygame.display.update()    
+        # Compute the calculation for each cell
+        for cell_line in self._former_cells:
+            for cell in cell_line:
+                num_neighbors = self.count_neighbors(cell)
+                if not(cell.isAlive()):
+                    if (num_neighbors == 3):
+                # Dead with 3 neighbors -> Alive
+                        self.add_cell(Cell(cell.getRow(), cell.getCol(), alive=True),cell.getRow(),cell.getCol())
+                    else:
+                # Dead any other case -> Dead
+                        self.add_cell(Cell(cell.getRow(), cell.getCol(), alive=False),cell.getRow(),cell.getCol())
+                elif (num_neighbors < 2) or (num_neighbors > 3):
+                # Alive and wrong neighbors num -> Dead
+                    self.add_cell(Cell(cell.getRow(), cell.getCol(), alive=False),cell.getRow(),cell.getCol())
+                else:
+                # Alive with good neighbors num -> Alive
+                    self.add_cell(Cell(cell.getRow(), cell.getCol(), alive=True),cell.getRow(),cell.getCol())
+
+    def count_neighbors(self,cell):
+        count = 0
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+
+                # Avoid the cell itself
+                if i == 0 and j == 0:
+                    continue
+                
+                # Tor surface index
+                neighbor_row = (cell.getRow()+ i + self._height) % self._height
+                neighbor_col = (cell.getCol() + j + self._width) % self._width
+
+                # Check if neighbor is alive
+                if self._former_cells[neighbor_row][neighbor_col].isAlive():
+                    count += 1
+                    
+        return count
+
+class game_of_life():
+    def __init__(self, width, height, initial_cells, output_file, display, nb_gen, screen):
+        # Size of the simulation
+        self._width = width
+        self._height = height
+        
+        # Files to consider
+        self._output_file = output_file
+        self._input_file = initial_cells
+
+        # Display
+        self._display = display
+        self._screen = screen
+
+        # Simulation init
+        self._nb_gen = nb_gen
+        self._gen = 0
+        self._set_of_cells = SetOfCells(width, height, initial_cells, output_file)
+
+        # Read the set of cells from the file
+        self.read_initial_cells()
+        
+    def read_initial_cells(self):
+        self._set_of_cells.load_cells()
+
+    def save_final_cells(self):
+        self._set_of_cells.save_cells()
+
+    def update_cells(self):
+        self._set_of_cells.update_cells()
+    
+    def is_anyone_alive(self):
+        return self._set_of_cells.is_anyone_alive()
+    
+    def update_display(self):
+        self._screen.update(self._set_of_cells.get_cell_values())
 
     def start(self):
+        while (self._gen < self._nb_gen) or (self._display):
 
-        # Loop forever
-        logger.debug("Start main loop.")
-        try:
-            while True:
-                
-                # Wait 1/FPS of a second, starting from last display or now
-                self._clock.tick(self._fps)
-                
-                self._process_events()
-                self._update_objects()
-                self._update_display()
+            # Update the state of cells
+            self.update_cells()
+            self._gen +=1
+            
+            # Display handling if necessary
+            if self._display:
+                # Watch out to pygame close event
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.save_final_cells()
+                        pygame.quit()
+                        quit(0)
+                self.update_display()
 
-        except GameOver:
-            pass
+            # Check for the end of the game
+            if not self.is_anyone_alive():
+                logger.info("No live cells remaining. Exiting the simulation.")
+                self.save_final_cells()
+                # Close only if no display
+                if not(self._display):
+                    quit(0)
+            
+            # Write the last state
+            self.save_final_cells()
 
-        logger.info("\nGame over.")
+class PYGAME_DISPLAY():
+    def __init__(self,width, height, fps, tile_size):
 
-        # Terminate Pygame
-        pygame.quit()
-        self._process_score()
+        # Grid size
+        self._width = width
+        self._height = height
 
+        # Frame per sec
+        self._fps = fps
+
+        # Screen settings
+        self._tile_size = tile_size
+        self._screen = pygame.display.set_mode((width*self._tile_size, height*self._tile_size))
+
+    def update(self,cell_values):
+
+        # For each cell
+        for i in range(self._height):
+            for j in range(self._width):
+                # Draw a square 
+                cell_rect = pygame.Rect(j * self._tile_size, i * self._tile_size, self._tile_size, self._tile_size)
+                pygame.draw.rect(self._screen, pygame.Color(WHITE) if cell_values[i][j] else pygame.Color(BLACK), cell_rect)
+
+        # Reverse the screen
+        pygame.display.flip()
+
+        # Wait for the next tick
+        pygame.time.delay(int(1/self._fps*1000))
 
 def main():
-
-    logger.debug("Start main function.")
     # Read command line arguments
     args = read_args()
 
-    # Create the game instance
-    logger.debug("Create Game instance.")
-    game = Game(**vars(args)) # vars() transforms mapping (args) into
-                              # a dictionary
+    logger.debug("#### Start main function ####")
 
-    # Run the game instance
-    logger.debug("Start Game instance.")
+    # Initialize Pygame if display is enabled
+    if args.d:
+        pygame.init()
+        display = PYGAME_DISPLAY(args.width, args.height, args.f, args.tile_size)
+    else:
+        display = None
+
+    # Create the game instance
+    logger.debug("#### Create Game instance ####")
+
+    game = game_of_life(
+        width=args.width,
+        height=args.height,
+        initial_cells=args.i,
+        output_file=args.o,
+        display=args.d,
+        nb_gen=args.m,
+        screen = display
+    )
+    # Run the game
+    logger.debug("#### Start Game instance ####")
     game.start()
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
-        
+
 if __name__ == "__main__":
 
     import sys
